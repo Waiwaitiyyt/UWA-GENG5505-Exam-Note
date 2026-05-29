@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GENG5505 Flashcards</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; min-height: 100vh; }
+  .app { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 0.25rem; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+
+  .section-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tab { padding: 6px 14px; border: 0.5px solid #ccc; border-radius: 20px; font-size: 13px; cursor: pointer; background: white; color: #444; transition: all 0.15s; }
+  .tab:hover { border-color: #888; }
+  .tab.active { background: #2c2c2a; color: white; border-color: #2c2c2a; }
+
+  .progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .progress-bar { flex: 1; height: 4px; background: #e0dfd8; border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #534AB7; border-radius: 2px; transition: width 0.3s; }
+  .progress-text { font-size: 13px; color: #666; white-space: nowrap; }
+
+  .card-scene { perspective: 1200px; height: 380px; margin-bottom: 1.5rem; cursor: pointer; }
+  .card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .card-scene.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; }
+  .card-front { background: white; border: 0.5px solid #ddd; }
+  .card-back { background: #EEEDFE; border: 0.5px solid #AFA9EC; transform: rotateY(180deg); }
+
+  .card-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 0.85rem; }
+  .card-back .card-label { color: #534AB7; }
+  .card-q { font-size: 17px; font-weight: 500; line-height: 1.5; color: #1a1a1a; }
+  .flip-hint { font-size: 12px; color: #aaa; margin-top: auto; padding-top: 1rem; text-align: center; }
+  .card-back .flip-hint { color: #AFA9EC; }
+
+  .section-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-bottom: 0.6rem; }
+  .badge-a { background: #E6F1FB; color: #185FA5; }
+  .badge-b { background: #EAF3DE; color: #3B6D11; }
+  .badge-c { background: #FAEEDA; color: #854F0B; }
+
+  /* --- Structural summary styles --- */
+  .struct-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+  .struct-step { background: white; border: 0.5px solid #AFA9EC; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #26215C; text-align: center; }
+  .struct-step em { display: block; font-size: 11px; color: #534AB7; font-style: normal; margin-top: 2px; }
+  .struct-arrow { color: #AFA9EC; font-size: 14px; padding: 0 2px; }
+  .struct-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  .pill { background: white; border: 0.5px solid #AFA9EC; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #3C3489; }
+  .pill.hi { background: #534AB7; color: white; border-color: #534AB7; }
+  .pill.warn { background: #FAEEDA; border-color: #EF9F27; color: #633806; }
+  .struct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0; }
+  .struct-col { background: white; border: 0.5px solid #AFA9EC; border-radius: 8px; padding: 8px 10px; }
+  .struct-col-title { font-size: 11px; font-weight: 500; color: #534AB7; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .struct-col ul { padding-left: 1rem; font-size: 12px; color: #3C3489; }
+  .struct-col li { margin-bottom: 2px; }
+  .struct-ol { padding-left: 1.1rem; margin: 6px 0; }
+  .struct-ol li { font-size: 13px; color: #26215C; font-weight: 500; margin-bottom: 3px; }
+  .struct-ol li span { font-weight: 400; color: #534AB7; font-size: 12px; }
+  .struct-section { margin-bottom: 8px; }
+  .struct-section-title { font-size: 11px; font-weight: 500; color: #534AB7; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* --- Detail toggle --- */
+  .detail-divider { border: none; border-top: 0.5px solid #AFA9EC; margin: 10px 0 8px; }
+  .toggle-btn { display: flex; align-items: center; gap: 6px; background: white; border: 0.5px solid #AFA9EC; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: #534AB7; cursor: pointer; width: fit-content; transition: all 0.15s; }
+  .toggle-btn:hover { background: #CECBF6; }
+  .card-detail { font-size: 13px; line-height: 1.7; color: #3C3489; margin-top: 10px; }
+  .card-detail ul, .card-detail ol { padding-left: 1.2rem; margin-top: 4px; }
+  .card-detail li { margin-bottom: 3px; }
+  .card-detail strong { font-weight: 500; color: #26215C; }
+
+  /* --- Nav & controls --- */
+  .nav-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .nav-btn { padding: 8px 20px; border: 0.5px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer; background: white; color: #333; transition: all 0.15s; }
+  .nav-btn:hover:not(:disabled) { border-color: #888; background: #f8f8f8; }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.primary { background: #534AB7; color: white; border-color: #534AB7; }
+  .nav-btn.primary:hover { background: #3C3489; }
+  .card-counter { font-size: 14px; color: #666; text-align: center; min-width: 80px; }
+  .known-row { display: flex; gap: 8px; justify-content: center; margin-top: 1rem; }
+  .known-btn { padding: 6px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 0.5px solid; transition: all 0.15s; }
+  .known-btn.yes { border-color: #0F6E56; color: #0F6E56; background: #E1F5EE; }
+  .known-btn.yes:hover { background: #9FE1CB; }
+  .known-btn.no { border-color: #993C1D; color: #993C1D; background: #FAECE7; }
+  .known-btn.no:hover { background: #F5C4B3; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1.5rem; }
+  .stat { background: white; border: 0.5px solid #ddd; border-radius: 8px; padding: 0.75rem 1rem; text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 500; }
+  .stat-label { font-size: 12px; color: #888; margin-top: 2px; }
+  .stat.green .stat-num { color: #0F6E56; }
+  .stat.red .stat-num { color: #993C1D; }
+  .stat.purple .stat-num { color: #534AB7; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>GENG5505 Exam Flashcards</h1>
+  <p class="subtitle">Click card to see structure · then reveal full answer · mark to track progress</p>
+
+  <div class="section-tabs">
+    <button class="tab active" onclick="setSection('all',this)">All (<span id="cnt-all"></span>)</button>
+    <button class="tab" onclick="setSection('A',this)">Section A (<span id="cnt-A"></span>)</button>
+    <button class="tab" onclick="setSection('B',this)">Section B (<span id="cnt-B"></span>)</button>
+    <button class="tab" onclick="setSection('C',this)">Section C (<span id="cnt-C"></span>)</button>
+    <button class="tab" onclick="setSection('review',this)">To Review (<span id="cnt-review"></span>)</button>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <div class="progress-text" id="prog-text">0%</div>
+  </div>
+
+  <div class="card-scene" id="card-scene" onclick="handleCardClick(event)">
+    <div class="card-inner">
+      <div class="card-face card-front">
+        <div class="section-badge" id="card-badge"></div>
+        <div class="card-label">Question</div>
+        <div class="card-q" id="card-q"></div>
+        <div class="flip-hint">Click to see answer structure →</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-label">Answer</div>
+        <div id="card-summary"></div>
+        <hr class="detail-divider">
+        <button class="toggle-btn" id="toggle-btn" onclick="toggleDetail(event)"><span id="toggle-icon">▼</span><span id="toggle-text"> Show full answer</span></button>
+        <div class="card-detail" id="card-detail" style="display:none"></div>
+        <div class="flip-hint">← Click card to return</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="known-row" id="known-row" style="display:none">
+    <button class="known-btn yes" onclick="markKnown(true)">✓ Got it</button>
+    <button class="known-btn no" onclick="markKnown(false)">✗ Need to review</button>
+  </div>
+
+  <div class="nav-row" style="margin-top:1rem">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)">← Previous</button>
+    <div class="card-counter" id="card-counter"></div>
+    <button class="nav-btn primary" id="btn-next" onclick="navigate(1)">Next →</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat purple"><div class="stat-num" id="s-total">0</div><div class="stat-label">Cards in set</div></div>
+    <div class="stat green"><div class="stat-num" id="s-known">0</div><div class="stat-label">Got it</div></div>
+    <div class="stat red"><div class="stat-num" id="s-review">0</div><div class="stat-label">To review</div></div>
+  </div>
+</div>
+
+<script>
+const cards = [
+  {
+    section:'A',
+    q:'From the project, explain the 4 stages of the project and why each of them is important.',
+    summary:`<div class="struct-flow">
+      <div class="struct-step">Concept<em>Identify &amp; justify</em></div>
+      <div class="struct-arrow">→</div>
+      <div class="struct-step">Planning<em>Schedule &amp; allocate</em></div>
+      <div class="struct-arrow">→</div>
+      <div class="struct-step">Execution<em>Monitor &amp; control</em></div>
+      <div class="struct-arrow">→</div>
+      <div class="struct-step">Finalisation<em>Handover &amp; review</em></div>
+    </div>
+    <div class="struct-section" style="margin-top:10px">
+      <div class="struct-section-title">Why each matters</div>
+      <div class="struct-pills">
+        <span class="pill">Concept → prevents miscommunication</span>
+        <span class="pill">Planning → defines scope &amp; budget</span>
+        <span class="pill">Execution → ensures quality</span>
+        <span class="pill">Finalisation → lessons learned</span>
+      </div>
+    </div>`,
+    a:`<strong>4 stages: concept, planning, execution, and finalisation</strong>
+<br><br>
+<strong>Concept stage:</strong><br>
+This is the initial stage of the project — where all the idea is initially created, and the fundamental understanding of the project begins to make shape.
+<br><br>
+<strong>Why?</strong>
+<ul>
+<li>One of the most common reasons why project fail is due to miscommunication and misunderstanding and clarity between expectation and the project's final output.</li>
+<li>Because many stakeholders ignore the basic principle of project management which is identify the problem before you try to solve it.</li>
+<li>Concept stage provides this identification, as it requires that the project is correctly justified, investigated, assessed, and approved.</li>
+</ul>
+The concept stage seeks to capture, document, and clarify relevant information on 4 inputs constrain found in every project (time, cost, resources, and specification).
+<br><br>
+<em>E.g. For the PCH project the concept stage began with the purpose to build a new tertiary children hospital to replace the old rundown hospital. Initial preliminary goals were determined, economical, social and environmental issues were raised, impact assessment was made. The budget was approximated at 1.2 billion with the location set in Nedlands. The design of the hospital was initialised with around 290 beds and lots of bright colours tailored to kids. All in all, the purpose of this stage is to identify the project goals, deliverables and something which prepare for the planning stage.</em>
+<br><br>
+<strong>Planning Stage:</strong><br>
+The second stage, all the work required for the successful completion of the project is undertaken and the scope of the project is clearly defined.
+<ul>
+<li>All work required is planned and scheduled</li>
+<li>Objectives are finalised, resources allocated, quality is determined, final cost approved, agreement on timing</li>
+</ul>
+<em>In the planning stage, the design were detailed further, budgets were set at 1.2 billion, funding by WA government, and resources were allocated. Project time line was defined and outlines each phase of construction, estimated opening at June 2015.</em>
+<br><br>
+<strong>Execution:</strong><br>
+In this stage, it involves monitoring and controlling, the implementation of the work that was proposed in the planning stage. Performance, scope and quality checks ensure the project is up to standard.
+<br><em>For PCH, in execution phase, the physical construction started, delay occurred due to asbestos and water contamination, timeline was reviewed, revised and updated several times due to a multitude of issues.</em>
+<br><br>
+<strong>Finalisation:</strong><br>
+The last stage, this is to handover to the client. Lesson learnt. Resources are discarded or reallocated. Evaluation of the project.
+<br><em>In finalisation, it involves the acceptance and handover of the new PCH hospital from the construction company John Holland to the government of WA. Overall the project finished with many challenges and obstacles, with published reports from government and consulting companies evaluating and reviewing the processes.</em>`
+  },
+  {
+    section:'A',
+    q:'Explain the sustainable approach and how it is consistent with TBL. Explain how it could improve the project by applying it to every stage.',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">TBL — Triple Bottom Line</div>
+      <div class="struct-pills">
+        <span class="pill">Economic — ROI &amp; prosperity</span>
+        <span class="pill">Environmental — emissions &amp; waste</span>
+        <span class="pill">Social — community &amp; fairness</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Applied across 4 stages</div>
+      <div class="struct-flow">
+        <div class="struct-step">Concept<em>Localise, LED, water recycle</em></div>
+        <div class="struct-arrow">→</div>
+        <div class="struct-step">Planning<em>Risk ID, façade design</em></div>
+        <div class="struct-arrow">→</div>
+        <div class="struct-step">Execution<em>Eco impact studies</em></div>
+        <div class="struct-arrow">→</div>
+        <div class="struct-step">Finalisation<em>Checklists, outreach</em></div>
+      </div>
+    </div>`,
+    a:`A sustainable approach is the company's ability to achieve its business goals and increase long-term stakeholder value by integrating economic, social, and environmental opportunities into its business.
+<br><br>
+A project can prioritise its long-term financial success while also treating its stakeholders fairly, the two goals are not in conflict.
+<br><br>
+<strong>Indicators for measuring sustainability:</strong>
+<ul>
+<li><strong>Economic:</strong> financial health, economic performance, return of investment, risks (will the project generate prosperity)</li>
+<li><strong>Environmental:</strong> resource extraction, emissions, air/water, waste, hazardous materials, will the project cause long term damage to the environment.</li>
+<li><strong>Social:</strong> internal HR, external population, the community, will the project be implemented in a socially responsible manner and benefit the affected communities in a fair and equal way</li>
+<li><strong>Sustainability:</strong> meeting the needs of people today without compromising the ability of future generations to meet their own needs.</li>
+</ul>
+<strong>TBL in the 4 stages:</strong>
+<br><br>
+<strong>Concept stage:</strong>
+<ul>
+<li>Reduce the amount of waste produced by putting up sustainable consideration not only for materials but for process approaches</li>
+<li>Localise the project</li>
+<li>Utilising local construction company John Holland; minimise the damage to the environment, have water recycling strategies and LED lights</li>
+<li>Tailor to kids (social impact)</li>
+<li>1.2 billion dollar project that will boost the economy</li>
+</ul>
+<strong>Planning stage:</strong>
+<ul>
+<li>With specialist identified the possible risks of the project, not only the scope management plan accounted for this, but it would also ensure that TBL was considered and reduced the time and cost wasted trying to fix environmental damage</li>
+<li>TBL was considered greatly in the planning process.</li>
+<li>Building itself designed in a way that uses double skinned façade during construction, which greatly saves energy in the long run</li>
+<li>LED lights installed to save energy</li>
+<li>More bright colours and play area</li>
+</ul>
+<strong>Execution Process:</strong>
+<ul>
+<li>TBL should be addressed throughout the execution phase taking into consideration the environmental risks of the man-made construction on the ecosystem</li>
+<li>Studies should be performed at all stages in the project that concludes that there will not be any significant environmental impact</li>
+<li>Sustainable thinking could save labour forces, natural resources and energy</li>
+<li>The intellectual property it creates will form a long-term return for the management team as well as the high-level stakeholder participation</li>
+</ul>
+<strong>Finalisation stage:</strong>
+<ul>
+<li>It is not sufficient to determine the project success by only checking that the project scope has been delivered</li>
+<li>Further analysis required with TBL</li>
+<li>Quality checklists are a tool that can be used to ensure TBL are considered within the quality analysis of the project</li>
+<li>Companies can establish positive image to the public by promoting their consideration in sustainable development at the finalisation stage.</li>
+<li>PCH play a vital role in community engagement in terms of social aspect, offers outreach program after the project completion and help the vulnerable people in rural areas or people with low SES</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'Differentiate the 3 numerical methods of categorising investments. Which is the most exhaustive?',
+    summary:`<div class="struct-grid">
+      <div class="struct-col">
+        <div class="struct-col-title">Payback Period</div>
+        <div style="font-size:12px;color:#3C3489">Time to recover investment<br><br>Cost ÷ Annual revenue</div>
+      </div>
+      <div class="struct-col">
+        <div class="struct-col-title">ROI</div>
+        <div style="font-size:12px;color:#3C3489">Profit as % of investment<br><br>(Net profit ÷ Investment) × 100</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;background:#534AB7;border-radius:8px;padding:8px 12px;color:white;font-size:13px">
+      ★ Most exhaustive: <strong style="color:white">NPV</strong> — projected profitability based on future cash flows &amp; discounted interest rate
+    </div>`,
+    a:`<strong>Payback period</strong> — the time taken to earn back the money invested
+<br>Cost of project / annual cash revenue
+<br><br>
+<strong>Return on investment</strong> — overall profit on an investment calculated as % of the total amount invested
+<br>(net profit) / total investment &times; 100
+<br><br>
+<strong>Net present value (most exhaustive)</strong> — the projected profitability of an investment
+<ul>
+<li>Based on the future anticipated cash-flows and discounted interest rate.</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'Refer to your group experience, explain the stages of team development.',
+    summary:`<div class="struct-section-title" style="font-size:11px;font-weight:500;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tuckman's Model — not a linear process</div>
+    <div class="struct-flow" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="struct-step" style="min-width:110px">Forming</div>
+        <span style="font-size:12px;color:#534AB7">Members join, define purpose, structure &amp; leadership</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="struct-step" style="min-width:110px">Storming</div>
+        <span style="font-size:12px;color:#534AB7">Conflicts arise — clashes, leadership issues</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="struct-step" style="min-width:110px">Norming</div>
+        <span style="font-size:12px;color:#534AB7">Code of conduct formed, norms agreed</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="struct-step" style="min-width:110px">Performing</div>
+        <span style="font-size:12px;color:#534AB7">Members work in a united manner</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;width:100%">
+        <div class="struct-step" style="min-width:110px">Adjourning</div>
+        <span style="font-size:12px;color:#534AB7">Project finishes, team disbands</span>
+      </div>
+    </div>`,
+    a:`Not a linear process
+<ul>
+<li><strong>Forming</strong> – member join and begin the process of defining the group's purpose, structure and leadership<br><em>(group forming in class and first meeting)</em></li>
+<li><strong>Storming</strong> – when conflicts arise, personality clashes, roles not matching expectations, leadership issues<br><em>(meeting 2,3 no clear direction to get project progress)</em></li>
+<li><strong>Norming</strong> – natural code of conduct formed and norms developed, shared and agreed<br><em>(meeting on regular basis with updates on project and progressing)</em></li>
+<li><strong>Performing</strong> – members of the team perform assigned work in united manner<br><em>(group actively contributing to the report and meeting on regular basis)</em></li>
+<li><strong>Adjourning</strong> – the project finish and the team disband<br><em>(project submitted, final presentation completed)</em></li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What are the 10 key competencies for running a team based on PMBOK?',
+    summary:`<ol class="struct-ol">
+      <li>Stakeholder management</li>
+      <li>Scope management</li>
+      <li>Time management</li>
+      <li>Cost management</li>
+      <li>Quality management</li>
+      <li>Human resource management</li>
+      <li>Communication management</li>
+      <li>Risk management</li>
+      <li>Procurement management</li>
+      <li>Integration management</li>
+    </ol>`,
+    a:`<ol>
+<li><strong>Stakeholder management</strong> — ensure stakeholders are identified and well informed and engaged with throughout the project</li>
+<li><strong>Scope management</strong> — process ensuring that all work required by the project &amp; only this work is included</li>
+<li><strong>Time management</strong> — process ensuring that project is completed in a timely manner</li>
+<li><strong>Cost management</strong> — the project completed within the approved budget</li>
+<li><strong>Quality management</strong> — ensure it will satisfy the needs (standards, definitions, specification, use) for which it was undertaken</li>
+<li><strong>Human resource management</strong> — effective use can be made of all people involved in the project</li>
+<li><strong>Communication management</strong> — ensure all communication is complete, timely, appropriate &amp; targeted</li>
+<li><strong>Risk management</strong> — all project risks are clearly identified, comprehensively analysed &amp; responded to proactively</li>
+<li><strong>Procurement management</strong> — process required to acquire all external goods &amp; services for the project</li>
+<li><strong>Integration management</strong> — all aspects of the project are effectively coordinated &amp; managed</li>
+</ol>`
+  },
+  {
+    section:'B',
+    q:'What are the important considerations for good communication? Choose 2 stakeholders and discuss some of the barriers to communication.',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">Good communication must be</div>
+      <div class="struct-pills">
+        <span class="pill">Clear</span><span class="pill">Concise</span><span class="pill">Accurate</span><span class="pill">Timely</span><span class="pill">Targeted</span><span class="pill">Appropriate</span><span class="pill">Complete</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Communication model</div>
+      <div class="struct-flow">
+        <div class="struct-step">Sender</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Encode</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Message</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Decode</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Receiver</div>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Barriers (e.g. PM → Contractor)</div>
+      <div class="struct-pills">
+        <span class="pill warn">Misinterpretation</span><span class="pill warn">Scope changes not shared</span><span class="pill warn">Incomplete docs</span><span class="pill warn">Unclear terminology</span>
+      </div>
+    </div>`,
+    a:`<ul>
+<li>Essential for project's success, to ensure all parties are involved in the project</li>
+<li>Clear, concise, accurate, timely, targeted, appropriate and completed</li>
+<li>Ensures that there is no ambiguity and will reduce the risk of misunderstanding</li>
+</ul>
+The communication process model describes communication as the passing of information between a sender and a receiver.
+<br><br>
+<em>E.g. sender – project manager &nbsp;&nbsp;&nbsp; receiver – contractor</em>
+<ul>
+<li>There can be lots of barriers that restrict the 2 parties from effective communication</li>
+<li>The receiving party (contractor) does not decode the message send by the project manager correctly, misinterpretation someone's message can be easy if the message is unclear, we all have our own attitudes, experiences and beliefs that affect our cognitive view of how the world works</li>
+<li>That procures a communication barrier</li>
+<li>Another example: the project scope has changed and a contractor hasn't been informed</li>
+</ul>
+There's plenty of reasons why communication can breakdown, this includes inconsistence in informing about scope changes, incomplete documentation and team members coming and going. Unclear terminology.`
+  },
+  {
+    section:'B',
+    q:'Why is stakeholder management important? Discuss 4 stakeholder management strategies.',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">Why important</div>
+      <div class="struct-pills">
+        <span class="pill">Affect project outcomes</span><span class="pill">Can cause delays &amp; overruns</span><span class="pill">Projects need them to proceed</span><span class="pill">Future contract opportunities</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Strategies</div>
+      <div class="struct-pills">
+        <span class="pill">Adaptation</span><span class="pill">Compromise</span><span class="pill">Avoidance</span><span class="pill">Dismissal</span><span class="pill">Influence</span>
+      </div>
+    </div>`,
+    a:`<ul>
+<li>Stakeholder can affect the project's outcome, can offer many challenge to the project, change in expectations, vested interest, different needs</li>
+<li>Stakeholder management ensure there is clear assignment of responsibilities, accountability, transparency, identification, communication management of all stakeholders</li>
+<li>The diversity of ideas, contribution, support, and challenges are all by-products of working with stakeholders</li>
+<li>Project can't be commenced or completed without them</li>
+<li>If not done effectively, power to make the project go over time, over budget, and not allow the project to meet the target.</li>
+<li>Important to avoid these problems</li>
+<li>It will also benefit you as it will create chances for future contract (recommendations, re-hire for their own projects)</li>
+</ul>
+<strong>Strategies:</strong>
+<ul>
+<li><strong>Adaptation strategy</strong> — obey the demands and rules from stakeholders</li>
+<li><strong>Compromise</strong> — negotiate with stakeholders</li>
+<li><strong>Avoidance</strong> — loosing attachment to stakeholders &amp; their claims</li>
+<li><strong>Dismissal strategy</strong> — ignoring stakeholder demands</li>
+<li><strong>Influence strategy</strong> — dealing proactively with demands</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What is lifecycle thinking and why is it important to project management?',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">Lifecycle phases</div>
+      <div class="struct-flow">
+        <div class="struct-step">Raw materials</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Manufacture</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Distribution</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Usage</div><div class="struct-arrow">→</div>
+        <div class="struct-step">Waste disposal</div>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Core idea</div>
+      <div class="struct-pills">
+        <span class="pill">Considers all TBL impacts</span><span class="pill">Across the entire product life</span><span class="pill">Positive &amp; negative consequences</span>
+      </div>
+    </div>`,
+    a:`<strong>Life cycle thinking</strong> — strategy that aims at taking into account of all the impacts (TBL: economic, social and environmental) that a product or service will have throughout its life cycle. Allows project manager to see the lasting impact of the project, see their decisions and implementation make on the TBL.
+<br><br>
+<strong>Lifecycle</strong> — holistic consideration of every phase:
+<ul>
+<li>Raw materials</li>
+<li>Manufacture</li>
+<li>Distribution</li>
+<li>Usage/consumption</li>
+<li>Waste disposal</li>
+</ul>
+<strong>Project management</strong> — application of knowledge, skills, tools and techniques to project activities to meet project requirements. Accomplished through the application and integration of the project management process: concept, planning, executing, finalisation.
+<br><br>
+Important to focus on project management as it allows a person/team to focus on the delivery of the entire project. It allows the management of each individual task and puts them all together to complete a goal (project).
+<br><br>
+<strong>Life cycle impact assessment:</strong> an impact is positive or negative result of an effect of a product, process and/or activity including all the social, economic, and environmental consequences and implications.`
+  },
+  {
+    section:'B',
+    q:'What are the stages of quality management?',
+    summary:`<div class="struct-flow">
+      <div class="struct-step">1. Planning<em>Define standards</em></div>
+      <div class="struct-arrow">→</div>
+      <div class="struct-step">2. Assurance<em>Evaluate performance</em></div>
+      <div class="struct-arrow">→</div>
+      <div class="struct-step">3. Control<em>Monitor &amp; fix</em></div>
+      <div class="struct-arrow">→</div>
+      <div class="struct-step">4. Improvement<em>Continuous commitment</em></div>
+    </div>`,
+    a:`<ol>
+<li><strong>Planning</strong> – all mandated quality standards, everything clearly defined and can be achieved and measured</li>
+<li><strong>Assurance</strong> – a guarantee that the overall project performance is evaluated on a regular basis to give all stakeholder the confidence</li>
+<li><strong>Control</strong> – monitor specific task and project results to identify, measure, eliminate the cause of unsatisfactory performance</li>
+<li><strong>Improvement</strong> – continuous process performed, to ensure a commitment and an ownership of what the project is delivering</li>
+</ol>`
+  },
+  {
+    section:'B',
+    q:'What is PERT (Program Evaluation and Review Technique)? Give 5 advantages and disadvantages.',
+    summary:`<div style="font-size:12px;color:#3C3489;margin-bottom:8px">Statistical tool to analyse and represent tasks involved in completing a project.</div>
+    <div class="struct-grid">
+      <div class="struct-col">
+        <div class="struct-col-title">✓ Advantages</div>
+        <ul>
+          <li>Excellent visual schedule</li>
+          <li>Participative decisions</li>
+          <li>Joint risk identification</li>
+          <li>Shows critical path</li>
+          <li>Improved team ownership</li>
+        </ul>
+      </div>
+      <div class="struct-col">
+        <div class="struct-col-title">✗ Disadvantages</div>
+        <ul>
+          <li>Hard to read for large projects</li>
+          <li>No timeline</li>
+          <li>Hard to monitor performance</li>
+          <li>Not always easy to understand</li>
+          <li>Limited info display</li>
+        </ul>
+      </div>
+    </div>`,
+    a:`A statistical tool used in a project to analyse and represent the tasks involved in completing a given project.
+<br><br>
+<strong>Advantages:</strong>
+<ul>
+<li>Excellent visual and interactive graphic to demonstrate the schedule</li>
+<li>Participative decision making</li>
+<li>Joint risk identification</li>
+<li>Shows critical path</li>
+<li>Improved team ownership</li>
+</ul>
+<strong>Disadvantages:</strong>
+<ul>
+<li>Difficult to read for large project</li>
+<li>No timeline</li>
+<li>Difficult to monitor and report performance</li>
+<li>Not always easy to understand</li>
+<li>Limited amount of information that it can display</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What is the Balanced Scorecard (BSC) for projects? How is it applied across project stages?',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">4 perspectives</div>
+      <div class="struct-pills">
+        <span class="pill">Customer — satisfaction &amp; value</span>
+        <span class="pill">Financial — budget &amp; variance</span>
+        <span class="pill">Internal — team &amp; resources</span>
+        <span class="pill">Growth — best practices &amp; TBL</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Across stages</div>
+      <div class="struct-flow">
+        <div class="struct-step">Concept<em>Establish baseline</em></div><div class="struct-arrow">→</div>
+        <div class="struct-step">Planning<em>Include benchmarks</em></div><div class="struct-arrow">→</div>
+        <div class="struct-step">Execution<em>Measure &amp; compare</em></div><div class="struct-arrow">→</div>
+        <div class="struct-step">Finalisation<em>Review &amp; document</em></div>
+      </div>
+    </div>`,
+    a:`Performance metric used in project management to identify and improve various internal functions and their resulting external outcomes.
+<br><br>
+<strong>Perspectives:</strong>
+<ul>
+<li><strong>Customer</strong> — customer satisfaction, economic value added</li>
+<li><strong>Financial</strong> — within budget, low variance</li>
+<li><strong>Project/internal</strong> — team satisfaction, resource management</li>
+<li><strong>Growth &amp; innovative</strong> — best practices identified, TBL, life cycle</li>
+</ul>
+<ul>
+<li><strong>Concept</strong> — initial measurement to establish a baseline for project planning</li>
+<li><strong>Planning</strong> — BSC benchmarks are included in overall project plan</li>
+<li><strong>Execution</strong> — measurements implemented, and initial benchmarks used for comparison and improve BSC outcomes</li>
+<li><strong>Finalisation</strong> — measurement reviewed and documented in the final report to support best practices, lesson learned</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What is required in a contract for it to be legally binding? What are the 3 types of contracts?',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">Legally binding requirements</div>
+      <div class="struct-pills">
+        <span class="pill">Offer</span><span class="pill">Acceptance</span><span class="pill">Consideration</span><span class="pill">Capacity</span><span class="pill">Legality</span><span class="pill">Mutuality</span><span class="pill">Consent</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">3 contract types</div>
+      <div class="struct-pills">
+        <span class="pill">Fixed Price</span><span class="pill">Cost-Reimbursable</span><span class="pill">Time &amp; Material</span>
+      </div>
+    </div>`,
+    a:`<strong>Requirements for legally binding:</strong>
+<ul>
+<li>Offer, acceptance, consideration, capacity, legality, mutuality, consent</li>
+</ul>
+<strong>Fixed price:</strong>
+<ul>
+<li>Delivery of a product for a fixed price</li>
+<li>Customer risk – incomplete specs lead to contract change, contractors use cheaper materials</li>
+<li>Contractor risk – careful cost and schedule estimation</li>
+</ul>
+<strong>Cost-reimbursable:</strong>
+<ul>
+<li>Seller is paid for the actual costs incurred plus a fee representing the seller's profit</li>
+</ul>
+<strong>Time and Material:</strong>
+<ul>
+<li>Contains features of both fixed fee &amp; cost-plus contracts</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What are the budgeting techniques learnt in the course?',
+    summary:`<ol class="struct-ol">
+      <li>Traditional <span>— based on previous year's performance</span></li>
+      <li>Zero-Based <span>— starts from zero, justify every outlay</span></li>
+      <li>Program <span>— activities grouped by major activity</span></li>
+      <li>Top-Down <span>— senior management knowledge &amp; past results</span></li>
+      <li>Bottom-Up <span>— task budgets estimated by responsible persons</span></li>
+    </ol>`,
+    a:`<ul>
+<li><strong>Traditional:</strong> previous year's level of performance is the foundation for next year's</li>
+<li><strong>Zero based:</strong> ignores previous results as each activity and outlay is justified, start off with zero spending</li>
+<li><strong>Program:</strong> activities are grouped together for projecting costs generated by each major activity</li>
+<li><strong>Top down:</strong> based on pooling the knowledge of senior managers and past results</li>
+<li><strong>Bottom up:</strong> Individual task budgets are estimated in detail by the people directly responsible for doing or managing the work.</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What can a project manager do to resolve disputes between stakeholders?',
+    summary:`<div class="struct-grid">
+      <div class="struct-col">
+        <div class="struct-col-title">Approach</div>
+        <ul>
+          <li>Avoidance</li>
+          <li>Accommodating</li>
+          <li>Forcing</li>
+          <li>Collaborating</li>
+          <li>Compromising</li>
+        </ul>
+      </div>
+      <div class="struct-col">
+        <div class="struct-col-title">Assertion / Cooperation</div>
+        <ul>
+          <li>Low / Low</li>
+          <li>Low / High</li>
+          <li>High / Low</li>
+          <li>High / High</li>
+          <li>Mid / Mid</li>
+        </ul>
+      </div>
+    </div>`,
+    a:`<ul>
+<li><strong>Avoidance</strong> – no attempt is made to address conflict, (low assertion, low cooperation)</li>
+<li><strong>Accommodating</strong> – sees the other's POV, and their POV is more important to your own (low, high)</li>
+<li><strong>Forcing</strong> – power and dominance are used to gain compliance to your perspective (high, low)</li>
+<li><strong>Collaborating</strong> – mutual and optimal outcomes are sought by both parties (high, high)</li>
+<li><strong>Compromising</strong> – mutually acceptable outcome reached, partially satisfies each party (mid, mid)</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'Why is scope management important? What should be included in a scope management plan?',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">Why important</div>
+      <div class="struct-pills">
+        <span class="pill warn">Expectations always increase</span><span class="pill warn">Scope always changes</span><span class="pill warn">Expectations ≠ capability</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Plan includes</div>
+      <div class="struct-pills">
+        <span class="pill">What is / isn't required</span>
+        <span class="pill">Scope baseline</span>
+        <span class="pill">Foundation of project plan</span>
+        <span class="pill">Expectation vs capability</span>
+        <span class="pill">Deliverables &amp; benefits</span>
+      </div>
+    </div>`,
+    a:`It documents how the project scope will be defined, validated, and controlled. It establishes the direction and guidance parameters on how the scope itself will be managed.
+<br><br>
+<strong>What does scope include:</strong>
+<ul>
+<li>What is required and what isn't required</li>
+<li>Establishes a scope baseline for comparison and updates</li>
+<li>Forms the foundation of the project plan</li>
+<li>Investigates if expectation meets capability</li>
+<li>Identifies project deliverables, results and benefits</li>
+</ul>
+<strong>Important:</strong>
+<ul>
+<li>Expectations don't always match capability, expectation will always increase</li>
+<li>Scope will always change overtime</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What key information should be included in the project charter and why?',
+    summary:`<div class="struct-pills">
+      <span class="pill hi">Problem</span>
+      <span class="pill hi">Goal</span>
+      <span class="pill hi">Objectives</span>
+      <span class="pill hi">Success criteria</span>
+      <span class="pill hi">Risks</span>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Also includes</div>
+      <div class="struct-pills">
+        <span class="pill">Title &amp; dates</span><span class="pill">Key stakeholders</span><span class="pill">Budget</span><span class="pill">TBL &amp; lifecycle thinking</span>
+      </div>
+    </div>`,
+    a:`Problem &nbsp;|&nbsp; Goal &nbsp;|&nbsp; Objectives &nbsp;|&nbsp; Success criteria &nbsp;|&nbsp; Risks
+<br><br>
+Title, start and finish date, key stakeholders, goals, budget, foreseeable risks, TBL and lifecycle thinking`
+  },
+  {
+    section:'B',
+    q:'What are some of the key characteristics of a highly performing project team?',
+    summary:`<ol class="struct-ol">
+      <li>Shared vision</li>
+      <li>Healthy team culture</li>
+      <li>Clearly defined roles &amp; expectations</li>
+      <li>Everyone is held accountable</li>
+      <li>Leader leads by example</li>
+    </ol>`,
+    a:`<ul>
+<li><strong>Shared vision</strong> — all team member understand where the team is headed</li>
+<li><strong>Healthy team culture</strong> — allows the team to make decisions, not waste time on office politics</li>
+<li><strong>Clear defined roles and expectations for performance</strong> — know what they are supposed to do, how their work supports the team</li>
+<li><strong>Everyone is held accountable</strong> — in a culture of accountability, the focus is on the personal development of your team and results</li>
+<li><strong>Leader is an example</strong> — work from leader's strength-zone and trust others to do the same</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What information should be found in the project close-out report?',
+    summary:`<div class="struct-pills">
+      <span class="pill">Confirm project ended</span>
+      <span class="pill">Review project journey</span>
+      <span class="pill">Document lessons learned</span>
+      <span class="pill">Release resources</span>
+      <span class="pill">All work completed</span>
+      <span class="pill">Acceptance criteria met</span>
+      <span class="pill">Transition procedures in place</span>
+      <span class="pill">All records collected</span>
+    </div>`,
+    a:`<ul>
+<li>Confirm project has ended, can review the project journey, document lesson learnt, release the info to pursue new endeavours. Review should form part of the project schedule</li>
+<li>Confirm all the outstanding work has been completed, all acceptance criteria nominated by the client has been met, all transition procedures are in place, all records collected</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'What is procurement management planning and what benefits does it bring to any project?',
+    summary:`<div style="font-size:12px;color:#3C3489;margin-bottom:8px">Processes to purchase products, services &amp; results from an <strong style="color:#26215C">outside team</strong>. A value-adding function.</div>
+    <div class="struct-section">
+      <div class="struct-section-title">Drivers of procurement</div>
+      <div class="struct-pills">
+        <span class="pill">Supply goods &amp; services</span>
+        <span class="pill">Improve supplier relationships</span>
+        <span class="pill">Balance value &amp; quality</span>
+        <span class="pill">Increase accountability</span>
+        <span class="pill">Apply TBL &amp; lifecycle thinking</span>
+      </div>
+    </div>`,
+    a:`The processes necessary to purchase products, services, results needed from an outside team. Its value-adding function that focuses on the efficient attainment of goods, services or results that deliver a number of benefits.
+<br><br>
+<strong>Drivers of procurement:</strong>
+<ul>
+<li>Supply goods and services, improve relationship with key suppliers, balance output with both value and quality, increase accountability, TBL and lifecycle thinking</li>
+</ul>`
+  },
+  {
+    section:'B',
+    q:'Explain how team conflict can have both positive and negative outcomes.',
+    summary:`<div class="struct-grid">
+      <div class="struct-col">
+        <div class="struct-col-title">✓ Positive</div>
+        <ul>
+          <li>Explore new ideas</li>
+          <li>Consider other perspectives</li>
+          <li>Necessary adjustments</li>
+          <li>Clarify positions</li>
+          <li>Time to reconsider</li>
+        </ul>
+      </div>
+      <div class="struct-col">
+        <div class="struct-col-title">✗ Negative</div>
+        <ul>
+          <li>Communication breakdown</li>
+          <li>Increased hostility</li>
+          <li>Work ceases</li>
+          <li>Legal action (contract breach)</li>
+        </ul>
+      </div>
+    </div>`,
+    a:`<strong>Positive:</strong> exploration of new ideas, consider other people's perspective, adjustments made, clarification of different positions, time to reconsider.
+<br><br>
+<strong>Negative:</strong> Breakdown of communication, increase hostility, cease of work on the project, legal action for contract breach.`
+  },
+  {
+    section:'B',
+    q:'What are 5 ways to terminate a project?',
+    summary:`<ol class="struct-ol">
+      <li>Extinction <span>— agreed to terminate regardless of success</span></li>
+      <li>Murder <span>— silent decision, project killed</span></li>
+      <li>Inclusion <span>— successful project institutionalised</span></li>
+      <li>Integration <span>— elements redistributed across organisation</span></li>
+      <li>Starvation <span>— budget cuts, changing priorities</span></li>
+    </ol>`,
+    a:`<ul>
+<li><strong>Extinction</strong> — agreed to terminate regardless of success</li>
+<li><strong>Murder</strong> — silent decision</li>
+<li><strong>Inclusion</strong> — successful project institutionalised</li>
+<li><strong>Integration</strong> — Elements of successful project redistributed</li>
+<li><strong>Starvation</strong> — budget cutbacks, resource allocation, changing priorities</li>
+</ul>`
+  },
+  {
+    section:'C',
+    q:'Describe utilitarianism, deontology, and virtue-based approaches to ethics.',
+    summary:`<div class="struct-grid">
+      <div class="struct-col">
+        <div class="struct-col-title">Utilitarianism</div>
+        <div style="font-size:12px;color:#3C3489">Judged by <strong style="color:#26215C">outcome</strong><br>Forward-looking<br>"End justifies means"</div>
+      </div>
+      <div class="struct-col">
+        <div class="struct-col-title">Deontology</div>
+        <div style="font-size:12px;color:#3C3489">Judged by <strong style="color:#26215C">action itself</strong><br>Backward-looking<br>Duty-based rules</div>
+      </div>
+    </div>
+    <div class="struct-col" style="margin-top:8px;background:white;border:0.5px solid #AFA9EC;border-radius:8px;padding:8px 10px">
+      <div class="struct-col-title">Virtue-Based</div>
+      <div style="font-size:12px;color:#3C3489">Focus on the <strong style="color:#26215C">person</strong>, not the action — a good person will do the right thing</div>
+    </div>`,
+    a:`<strong>Utilitarianism</strong> — An action judged as ethical or unethical based on the outcome. Future approach looking with the thinking does 'the end justifies the mean'.
+<br><br>
+<strong>Issues:</strong>
+<ul>
+<li>Minority rights at risk</li>
+<li>Who decides what good is</li>
+<li>What counts as consequence</li>
+</ul>
+<em>E.g. cost benefit analysis — a pharmaceutical company releasing a new drug with few side effects. The drug is beneficial to many people and side effects trouble small amount.</em>
+<br><br>
+<strong>Deontology</strong> – An action judged as ethical standing alone and without regard to consequences.
+<ul>
+<li>Actions are judged based on their inherent moral status, without regard of the consequence</li>
+<li>Backward-looking, duty-based approach</li>
+<li>Fundamental rules or duties that individual must adhere to, regardless of the outcomes</li>
+<li>Focuses on the means rather than outcome</li>
+<li>Act as if, through your actions, you were making universal law for everyone to follow</li>
+</ul>
+<em>E.g. man turning down the promotion which required him to commit forgery as it's against his principles.</em>
+<br><br>
+<strong>Virtue Based</strong> – focus is on the individual not the action.
+<ul>
+<li>Concentrates on the person who performs the act</li>
+<li>Good person will do the right thing</li>
+</ul>`
+  },
+  {
+    section:'C',
+    q:'What are the 5 key principles in the ethics code for engineers?',
+    summary:`<ol class="struct-ol">
+      <li>Serving &amp; protecting the public</li>
+      <li>Guidance</li>
+      <li>Inspiration</li>
+      <li>Shared standards</li>
+      <li>Support for responsible professionals</li>
+      <li>Education &amp; mutual understanding</li>
+      <li>Deterrence &amp; discipline</li>
+      <li>Contributing to the profession's image</li>
+    </ol>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">5 key words</div>
+      <div class="struct-pills">
+        <span class="pill hi">Honesty</span><span class="pill hi">Impartiality</span><span class="pill hi">Fairness</span><span class="pill hi">Equity</span><span class="pill hi">Protect public health/safety/welfare</span>
+      </div>
+    </div>`,
+    a:`<ol>
+<li><strong>Serving and protecting the public</strong> — engineers have advance expertise that professionals have and the public lacks; trust is essential, engineer stands in an assumed relationship with the public</li>
+<li><strong>Guidance</strong> — codes provide helpful guidance by articulating the main obligations of engineers</li>
+<li><strong>Inspiration</strong> — provide positive stimulus for ethical conducts as inspired by the collective commitment</li>
+<li><strong>Shared standards</strong> — diversity of moral viewpoints, critical to make it essential that professionals establish explicit standards</li>
+<li><strong>Support for responsible professional</strong> — give positive support to professionals seeking to act ethically</li>
+<li><strong>Education and mutual understanding</strong> — encourage shared understanding among professionals</li>
+<li><strong>Deterrence and discipline</strong> — professionals societies do suspend member whose professional conduct has been proven unethical</li>
+<li><strong>Contributing to the profession's image</strong> — essential for sustaining the trust of the public</li>
+</ol>`
+  },
+  {
+    section:'C',
+    q:'What are the benefits of managing a project ethically? Discuss and provide examples.',
+    summary:`<ol class="struct-ol">
+      <li>Cultivate strong teamwork &amp; productivity</li>
+      <li>Support team growth &amp; meaning</li>
+      <li>Help manage values associated with management</li>
+      <li>Promote a strong public image</li>
+    </ol>`,
+    a:`<ol>
+<li><strong>Cultivate strong teamwork and productivity</strong>
+<ul>
+<li>Ongoing attention and dialogue regarding values in a project builds openness and integrity</li>
+<li>Team feels strong alignment between their values and other organisation, with strong motivation and performance</li>
+<li>Promotes positive work environment, diversity when different values are valued</li>
+</ul>
+</li>
+<li><strong>Support the team growth and meaning</strong>
+<ul>
+<li>Team members feel full confidence they can admit and deal with whatever comes their way</li>
+</ul>
+</li>
+<li><strong>Help manage values associated with management</strong>
+<ul>
+<li>E.g. total quality management includes high priority on certain operating values e.g. trust among stakeholders, performance, feedback.</li>
+</ul>
+</li>
+<li><strong>Promote a strong public image</strong>
+<ul>
+<li>An organisation regularly gives attention to its ethic can have a strong positive image to the public</li>
+</ul>
+</li>
+</ol>`
+  },
+  {
+    section:'C',
+    q:'List the 5 key stakeholder groups and their ethical values.',
+    summary:`<ol class="struct-ol">
+      <li>Client <span>— the initiator</span></li>
+      <li>Sponsor <span>— the funding party</span></li>
+      <li>Project Steering Group</li>
+      <li>Managers</li>
+      <li>Team</li>
+    </ol>`,
+    a:`<ol>
+<li><strong>Client – the initiator</strong> — the person who wants the project to exist, will not want the project to be immoral or have a negative outcome</li>
+<li><strong>Sponsor</strong> — funding party; hold significant influence over the project; have the final word on whether a project is to be deemed as ethical and should be carried out</li>
+<li><strong>Project steering group</strong> — encourages everyone, including minorities to be heard</li>
+<li><strong>Managers</strong> — ensure the team is performing in an ethical manner is their role</li>
+<li><strong>Team</strong> — complete their tasks ethically to required standards</li>
+</ol>`
+  },
+  {
+    section:'C',
+    q:'What are the 7 stages of the ethical cycle?',
+    summary:`<div class="struct-flow" style="flex-direction:column;align-items:flex-start;gap:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">1</div>
+        <span style="font-size:12px;color:#3C3489">Case — particular moral complication</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">2</div>
+        <span style="font-size:12px;color:#3C3489">Moral problem statement</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">3</div>
+        <span style="font-size:12px;color:#3C3489">Problem analysis — stakeholders, values, facts</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">4</div>
+        <span style="font-size:12px;color:#3C3489">Options for action — generate solutions</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">5</div>
+        <span style="font-size:12px;color:#3C3489">Ethical judgement — apply theory</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">6</div>
+        <span style="font-size:12px;color:#3C3489">Reflection</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="struct-step" style="min-width:28px;font-weight:500">7</div>
+        <span style="font-size:12px;color:#3C3489">Morally acceptable action</span>
+      </div>
+    </div>`,
+    a:`<ol>
+<li><strong>Case</strong> – the cycle starts with a particular case of moral complication</li>
+<li><strong>Moral problem statement</strong> — clearly state what the problem is, for whom it's a problem, moral nature of the problem need to be clear</li>
+<li><strong>Problem analysis</strong> — clear identification of 3 relevant members, stakeholder, moral values, the relevant facts</li>
+<li><strong>Options for action</strong> — possible solutions are generated</li>
+<li><strong>Ethical judgement</strong> — through application of moral concepts, ethical theory</li>
+<li><strong>Reflection</strong> — reflect on the outcome of previous stage</li>
+<li><strong>Morally acceptable action</strong> — action decided upon are presented and implemented</li>
+</ol>`
+  },
+  {
+    section:'C',
+    q:'What are the characteristics of an ethical manager?',
+    summary:`<div class="struct-pills">
+      <span class="pill">Leads by example</span>
+      <span class="pill">Truthful &amp; honest</span>
+      <span class="pill">Admits failure or wrongdoing</span>
+      <span class="pill">Communicates moral values</span>
+      <span class="pill">Establishes code of ethics</span>
+      <span class="pill">Hires ethical individuals</span>
+      <span class="pill">Re-affirms the code at senior level</span>
+    </div>`,
+    a:`<ul>
+<li>Hundreds of good examples of personality traits</li>
+<li>Lead by example</li>
+<li>Truthful and honest</li>
+<li>Admit to failure or wrong</li>
+<li>Communicate their moral values and provide support for employees having ethical dilemma</li>
+<li>Establish code of ethics</li>
+<li>Hire individual with high ethical standard</li>
+<li>High level of management affirm and re-affirm the importance of the code of ethics</li>
+</ul>`
+  },
+  {
+    section:'C',
+    q:'What is the role of ethical engineers to the public?',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">3 frameworks</div>
+      <div class="struct-pills">
+        <span class="pill">Protect public health, safety &amp; welfare</span>
+        <span class="pill">Share moral responsibilities</span>
+        <span class="pill">Maintain integrity &amp; trust</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">Engineers Australia — 4 key points</div>
+      <div class="struct-pills">
+        <span class="pill hi">Demonstrate integrity</span>
+        <span class="pill hi">Practice competently</span>
+        <span class="pill hi">Exercise leadership</span>
+        <span class="pill hi">Promote sustainability</span>
+      </div>
+    </div>`,
+    a:`<ul>
+<li>Have a direct impact on others' life</li>
+<li>Perform under a standard of professional behaviour and adhere to the highest principles of ethical conduct</li>
+<li>Frameworks for ethics:
+<ul>
+<li>a) Protect public health, safety, welfare</li>
+<li>b) Share their understanding of moral responsibilities amongst engineers</li>
+<li>c) Maintain integrity and trust throughout careers</li>
+</ul>
+</li>
+</ul>
+<strong>4 key points to the Engineers Australia ethics code:</strong>
+<ul>
+<li>Demonstrate integrity</li>
+<li>Practice competently</li>
+<li>Exercise leadership</li>
+<li>Promote sustainability</li>
+</ul>`
+  },
+  {
+    section:'C',
+    q:'What tests can a project manager perform to determine if a task is ethical?',
+    summary:`<div class="struct-grid">
+      <div class="struct-col">
+        <div class="struct-col-title">9 tests</div>
+        <ul>
+          <li>a) Legal</li>
+          <li>b) Duties</li>
+          <li>c) Consequences</li>
+          <li>d) Utilitarian</li>
+          <li>e) Special obligation</li>
+        </ul>
+      </div>
+      <div class="struct-col">
+        <div class="struct-col-title">&nbsp;</div>
+        <ul>
+          <li>f) Motives</li>
+          <li>g) Rights</li>
+          <li>h) Justice</li>
+          <li>i) Sustainability</li>
+        </ul>
+      </div>
+    </div>`,
+    a:`Project manager can refer to the following tests to determine whether a task is or is not ethical in nature:
+<ul>
+<li><strong>a) Legal</strong> – Does the task violate the law?</li>
+<li><strong>b) Duties</strong> – Does it contradict widely accepted moral obligations?</li>
+<li><strong>c) Consequences</strong> – Will it result in major damages to people or organisations?</li>
+<li><strong>d) Utilitarian</strong> – Is there an alternative action that produces equal or greater benefits?</li>
+<li><strong>e) Special obligation</strong> – Does it violate any special duties?</li>
+<li><strong>f) Motives</strong> – Is the intent harmful?</li>
+<li><strong>g) Rights</strong> – Does it infringe upon the rights of stakeholders in any way?</li>
+<li><strong>h) Justice</strong> – Does it leave another person less well off?</li>
+<li><strong>i) Sustainability</strong> – Does it impact negatively on future generations?</li>
+</ul>`
+  },
+  {
+    section:'C',
+    q:'What are the Universal Moral Values for Corporate Codes of Ethics? Discuss and provide examples.',
+    summary:`<div class="struct-section">
+      <div class="struct-section-title">3 sources of universal moral values</div>
+      <div class="struct-pills">
+        <span class="pill">Corporate codes of ethics</span>
+        <span class="pill">Global codes of ethics</span>
+        <span class="pill">Business ethics literature</span>
+      </div>
+    </div>
+    <div class="struct-section" style="margin-top:8px">
+      <div class="struct-section-title">6 universal moral values</div>
+      <div class="struct-grid">
+        <div class="struct-col">
+          <div class="struct-col-title">Value</div>
+          <ul>
+            <li>Trustworthiness</li>
+            <li>Respect</li>
+            <li>Responsibility</li>
+            <li>Fairness</li>
+            <li>Caring</li>
+            <li>Citizenship</li>
+          </ul>
+        </div>
+        <div class="struct-col">
+          <div class="struct-col-title">Meaning</div>
+          <ul>
+            <li>Integrity, honesty, loyalty</li>
+            <li>Human rights</li>
+            <li>Accountability</li>
+            <li>Equity</li>
+            <li>No harm</li>
+            <li>TBL, lifecycle, law</li>
+          </ul>
+        </div>
+      </div>
+    </div>`,
+    a:`Universal moral values are generated by considering mainly three sources:
+<ol>
+<li>Corporate codes of ethics</li>
+<li>Global codes of ethics</li>
+<li>The business ethics literature</li>
+</ol>
+Based on the convergence of these three sources, six universal moral values for corporate codes of ethics have been proposed:
+<br><br>
+<table style="width:100%;font-size:13px;border-collapse:collapse">
+<tr style="border-bottom:0.5px solid #AFA9EC">
+  <td style="padding:5px 8px;font-weight:500;color:#26215C;width:40%">Trustworthiness</td>
+  <td style="padding:5px 8px;color:#3C3489">Integrity, honesty, loyalty, transparency</td>
+</tr>
+<tr style="border-bottom:0.5px solid #AFA9EC">
+  <td style="padding:5px 8px;font-weight:500;color:#26215C">Respect</td>
+  <td style="padding:5px 8px;color:#3C3489">Respect for human rights</td>
+</tr>
+<tr style="border-bottom:0.5px solid #AFA9EC">
+  <td style="padding:5px 8px;font-weight:500;color:#26215C">Responsibility</td>
+  <td style="padding:5px 8px;color:#3C3489">Accountability, self-restraints</td>
+</tr>
+<tr style="border-bottom:0.5px solid #AFA9EC">
+  <td style="padding:5px 8px;font-weight:500;color:#26215C">Fairness</td>
+  <td style="padding:5px 8px;color:#3C3489">Equity</td>
+</tr>
+<tr style="border-bottom:0.5px solid #AFA9EC">
+  <td style="padding:5px 8px;font-weight:500;color:#26215C">Caring</td>
+  <td style="padding:5px 8px;color:#3C3489">No harm</td>
+</tr>
+<tr>
+  <td style="padding:5px 8px;font-weight:500;color:#26215C">Citizenship</td>
+  <td style="padding:5px 8px;color:#3C3489">TBL, life cycle thinking, obeying the law</td>
+</tr>
+</table>`
+  },
+  {
+    section:'C',
+    q:'What are the 5 key principles in the ethics for engineers?',
+    summary:`<ol class="struct-ol">
+      <li>Honesty</li>
+      <li>Impartiality</li>
+      <li>Fairness</li>
+      <li>Equity</li>
+      <li>Dedicated to protection of public health, safety and welfare</li>
+    </ol>`,
+    a:`<ol>
+<li>Honesty</li>
+<li>Impartiality</li>
+<li>Fairness</li>
+<li>Equity</li>
+<li>And must be dedicated to the protection of the public health, safety and welfare</li>
+</ol>`
+  }
+];
+
+const knownMap = JSON.parse(localStorage.getItem('geng5505_known') || '{}');
+let currentSection = 'all';
+let filteredCards = [];
+let currentIdx = 0;
+let isFlipped = false;
+let detailVisible = false;
+
+function getFiltered() {
+  if (currentSection === 'all') return cards.map((_,i)=>i);
+  if (currentSection === 'review') return cards.map((_,i)=>i).filter(i=>knownMap[i]===false);
+  return cards.map((_,i)=>i).filter(i=>cards[i].section===currentSection);
+}
+
+function updateCounts() {
+  document.getElementById('cnt-all').textContent = cards.length;
+  ['A','B','C'].forEach(s => document.getElementById('cnt-'+s).textContent = cards.filter(c=>c.section===s).length);
+  document.getElementById('cnt-review').textContent = cards.filter((_,i)=>knownMap[i]===false).length;
+}
+
+function setSection(s, el) {
+  currentSection = s;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  filteredCards = getFiltered();
+  currentIdx = 0;
+  resetCard();
+  renderCard();
+}
+
+function resetCard() {
+  isFlipped = false;
+  detailVisible = false;
+  document.getElementById('card-scene').classList.remove('flipped');
+  document.getElementById('card-detail').style.display = 'none';
+  document.getElementById('toggle-icon').textContent = '▼';
+  document.getElementById('toggle-text').textContent = ' Show full answer';
+  document.getElementById('known-row').style.display = 'none';
+}
+
+function renderCard() {
+  if (filteredCards.length === 0) {
+    document.getElementById('card-q').textContent = 'No cards in this category.';
+    document.getElementById('card-summary').innerHTML = '';
+    document.getElementById('card-detail').innerHTML = '';
+    document.getElementById('card-badge').textContent = '';
+    document.getElementById('card-counter').textContent = '0 / 0';
+    document.getElementById('prog-fill').style.width = '0%';
+    document.getElementById('prog-text').textContent = '0%';
+    updateStats(); return;
+  }
+  const realIdx = filteredCards[currentIdx];
+  const card = cards[realIdx];
+  const badge = document.getElementById('card-badge');
+  badge.textContent = 'Section ' + card.section;
+  badge.className = 'section-badge badge-' + card.section.toLowerCase();
+  document.getElementById('card-q').textContent = card.q;
+  document.getElementById('card-summary').innerHTML = card.summary;
+  document.getElementById('card-detail').innerHTML = card.a;
+  document.getElementById('card-counter').textContent = (currentIdx+1) + ' / ' + filteredCards.length;
+  const pct = Math.round((currentIdx+1)/filteredCards.length*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-text').textContent = pct+'%';
+  document.getElementById('btn-prev').disabled = currentIdx === 0;
+  document.getElementById('btn-next').disabled = currentIdx === filteredCards.length-1;
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent = filteredCards.length;
+  document.getElementById('s-known').textContent = filteredCards.filter(i=>knownMap[i]===true).length;
+  document.getElementById('s-review').textContent = filteredCards.filter(i=>knownMap[i]===false).length;
+}
+
+function handleCardClick(e) {
+  if (e.target.closest('.toggle-btn') || e.target.closest('.known-btn')) return;
+  if (!isFlipped) {
+    document.getElementById('card-scene').classList.add('flipped');
+    isFlipped = true;
+    document.getElementById('known-row').style.display = 'flex';
+  } else {
+    resetCard();
+  }
+}
+
+function toggleDetail(e) {
+  e.stopPropagation();
+  detailVisible = !detailVisible;
+  const det = document.getElementById('card-detail');
+  const icon = document.getElementById('toggle-icon');
+  const btn = document.getElementById('toggle-btn');
+  det.style.display = detailVisible ? 'block' : 'none';
+  icon.textContent = detailVisible ? '▲' : '▼';
+  document.getElementById('toggle-text').textContent = detailVisible ? ' Hide details' : ' Show full answer';
+  if (detailVisible) det.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function navigate(dir) {
+  const n = currentIdx + dir;
+  if (n < 0 || n >= filteredCards.length) return;
+  currentIdx = n;
+  resetCard();
+  renderCard();
+}
+
+function markKnown(known) {
+  const realIdx = filteredCards[currentIdx];
+  knownMap[realIdx] = known;
+  localStorage.setItem('geng5505_known', JSON.stringify(knownMap));
+  updateCounts(); updateStats();
+  if (currentIdx < filteredCards.length-1) { currentIdx++; resetCard(); renderCard(); }
+  else { resetCard(); renderCard(); }
+}
+
+updateCounts();
+filteredCards = getFiltered();
+renderCard();
+</script>
+</body>
+</html>
