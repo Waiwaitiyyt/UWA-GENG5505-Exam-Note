@@ -3,7 +3,6 @@
 > 本文档基于原 `5505.docx` 题库，结合 Week 1–Week 12（无 Week 8）共 20 个 lecture PDF 中的内容进行校对修正。
 > 凡是与 lecture 内容不一致、措辞不准确、术语错误或回答有遗漏的地方，均在原答案的基础上修订并补充。
 > 每个被修正的题目下方均附 ⚠ **修正说明（Correction）**，标明依据的具体 lecture。
-> 原始 `5505.docx`、Week 文件夹及任何其他文件均未改动。
 
 ---
 
@@ -20,7 +19,7 @@ The **idea stage** in which the project is conceived. The team discusses prelimi
 
 **Why it is important.** One of the most common causes of project failure is miscommunication, misunderstanding, and lack of clarity between stakeholder expectations and the project's final output. Stakeholders often ignore the basic principle of project management — *identify the problem before you try to solve it.* The concept stage enforces this discipline because it requires the project to be correctly **justified, investigated, assessed and approved**. It captures, documents and clarifies relevant information on the **four input constraints** found in every project: **Time, Cost, Resources and Specification** (Hartley 2018, WK1b).
 
-*Example (PCH).* Initial purpose: replace the old rundown children's hospital with a new tertiary one; preliminary economic, social and environmental issues raised; impact assessment performed; budget approximated at $1.2 billion; site set in Nedlands; ~290 beds; bright child-friendly design.
+*Example (PCH).* Initial purpose: replace the old rundown children's hospital with a new tertiary one; preliminary economic, social and environmental issues raised; impact assessment performed; budget approximated at 1.2 billion; site set in Nedlands; ~290 beds; bright child-friendly design.
 
 #### Stage 2 — Planning Stage *(also called schedule, preparation, or Stage 2)*
 
