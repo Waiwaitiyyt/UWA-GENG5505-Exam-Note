@@ -10,6 +10,8 @@ This is a comprehensive repository for the GENG5505 unit in the University of We
 - **5505_corrected.md** Updated version of the original question bank for exam, with adaptation based on the 2026 semester 1 lecture slides. This version is recommended to be used for exam preparation
 - **5505_corrected.pdf** The pdf version, suitable for printing
 - **5505_flashcards.html** A web based quizing flashcard, can be used for testing the knowledge and revision.
+- **QnA.md** Some questions in the exam
+- **QnA.pdf** Same, good for printing
 
 ## 中文介绍
 
@@ -23,4 +25,6 @@ This is a comprehensive repository for the GENG5505 unit in the University of We
 - **5505_corrected.md** 这个版本是经过补充过的，和2026年上学期的课件进行了校验。推荐使用这个
 - **5505_corrected.pdf** 上面md文件的pdf版本，适合打印
 - **5505_flashcards.html** 用html写的一个记忆卡片，可以用来检验一下自己的记忆
+- **QnA.md** 几个重点的考试题和答案
+- **QnA.pdf** 同上，适合打印
 
